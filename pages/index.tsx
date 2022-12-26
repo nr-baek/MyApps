@@ -19,20 +19,11 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <div>
-        <h1>/pages/index.tsx</h1>
-        <h2>click!</h2>
+        <h1>My app</h1>
+        <p>click link!</p>
         <ul>
           <li>
-            <Link href={`${prefix}/sub`}>/pages/sub/index.tsx</Link>
-          </li>
-          <li>
-            <Link href={`${prefix}/sub/about`}>/pages/sub/about.tsx</Link>
-          </li>
-          <li>
-            <Link href={`${prefix}/sub/1`}>/pages/sub/[id].tsx</Link>
-          </li>
-          <li>
-            <Link href={`${prefix}/sub/2`}>/pages/sub/[id].tsx</Link>
+            <Link href={`${prefix}/play`}>play link</Link>
           </li>
         </ul>
       </div>
