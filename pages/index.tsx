@@ -2,10 +2,14 @@ import Head from "next/head";
 import Image from "next/image";
 import { Inter } from "@next/font/google";
 import styles from "../styles/Home.module.css";
+import Link from "next/link";
+import { useContext } from "react";
+import PortfolioContext from "../context/context";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
+  const { prefix } = useContext(PortfolioContext);
   return (
     <>
       <Head>
@@ -16,18 +20,19 @@ export default function Home() {
       </Head>
       <div>
         <h1>/pages/index.tsx</h1>
+        <h2>click!</h2>
         <ul>
           <li>
-            <a href="/sub">/pages/sub/index.tsx</a>
+            <Link href={`${prefix}/sub`}>/pages/sub/index.tsx</Link>
           </li>
           <li>
-            <a href="/sub/about">/pages/sub/about.tsx</a>
+            <Link href={`${prefix}/sub/about`}>/pages/sub/about.tsx</Link>
           </li>
           <li>
-            <a href="/sub/1">/pages/sub/[id].tsx</a>
+            <Link href={`${prefix}/sub/1`}>/pages/sub/[id].tsx</Link>
           </li>
           <li>
-            <a href="/sub/2">/pages/sub/[id].tsx</a>
+            <Link href={`${prefix}/sub/2`}>/pages/sub/[id].tsx</Link>
           </li>
         </ul>
       </div>
