@@ -9,17 +9,17 @@ function Index() {
   const [isCalcClicked, setIsCalcClicked] = useState(false);
 
   const onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!isCalcClicked) {
-      setValue(e.target.value);
-    }
-    console.log(e.target.value);
+    // if (!isCalcClicked) {
+    //   setValue(e.target.value);
+    // }
+    // console.log(e.target.value);
   };
 
   const onKeyUpInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (isCalcClicked) {
-      setValue(e.key);
-      setIsCalcClicked(false);
-    }
+    // if (isCalcClicked) {
+    //   setValue(e.key);
+    //   setIsCalcClicked(false);
+    // }
   };
 
   const calculate = (num1: number, num2: number, calc: string) => {
@@ -41,7 +41,37 @@ function Index() {
         result = result;
     }
 
-    return result;
+    let decimalN = 0;
+
+    if (calc === "+" || calc === "-") {
+      if (!Number.isInteger(num1)) {
+        var d = String(num1).split(".")[1].length;
+        if (decimalN < d) decimalN = d;
+      }
+      if (!Number.isInteger(num2)) {
+        var d = String(num2).split(".")[1].length;
+        if (decimalN < d) decimalN = d;
+      }
+    } else {
+      decimalN = 14;
+    }
+
+    result = Number(result?.toFixed(decimalN));
+
+    if (Number.isInteger(result)) return Math.ceil(result);
+
+    const resultArr = [...(result + "").split("")];
+
+    let zero = 0;
+    for (let i = resultArr.length - 1; i > resultArr.length - decimalN; i--) {
+      if (resultArr[i] === "0") {
+        ++zero;
+      } else {
+        break;
+      }
+    }
+
+    return zero > 0 ? Number(result?.toFixed(decimalN - zero)) : result;
   };
 
   const onClickButton = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -115,15 +145,15 @@ function Index() {
       setCalc("");
       setIsCalcClicked(false);
     } else if (pointClicked) {
-      // 소수점 클릭한 경우
+      setValue(state => state + ".");
     }
   };
 
   return (
     <>
-      <p>num1: {num1}</p>
+      {/* <p>num1: {num1}</p>
       <p>calc: {calc}</p>
-      <p>num2: {num2}</p>
+      <p>num2: {num2}</p> */}
       <div className={styles.container} onClick={onClickButton}>
         <input
           className={styles.input}
