@@ -1,28 +1,31 @@
 .container {
-  padding: 1px;
-  border: 1px soild #333;
-  background-color: #333;
+  padding: 6px;
+  background-color: #949494;
   width: 300px;
   margin: 70px auto;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: repeat(6, 80px);
-  grid-gap: 1px;
+  grid-gap: 5px;
+  font-weight: 600;
 }
 
-.container button {
-  background-color: #fff;
+.container div {
+  display: inline-block;
   border: 0;
   color: #fff;
   font-size: 30px;
   cursor: pointer;
+  text-align: center;
+  line-height: 80px;
+  border-radius: 6px;
 }
 
-.container button:hover {
-  background-color: brown;
+.container div:hover {
+  background-color: #be5700;
 }
 
-.input {
+.container p {
   box-sizing: border-box;
   background-color: #fff;
   width: 100%;
@@ -33,14 +36,18 @@
   border: 0;
   font-size: 35px;
   text-align: right;
+  vertical-align: middle;
+  line-height: 80px;
 }
 
-.container .ac {
-  background-color: #999;
+.container .clear {
+  background-color: #666;
   grid-column: 1 / 4;
+  letter-spacing: 5px;
 }
 
-.container .calc {
+.container .calc,
+.container .equal {
   background-color: orange;
 }
 

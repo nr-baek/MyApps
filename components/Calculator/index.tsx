@@ -1,184 +1,147 @@
 import React, { useState } from "react";
 import styles from "../../styles/Calculator.module.css";
+import calculate from "../../utils/calculate";
 
 function Index() {
   const [value, setValue] = useState("0");
-  const [num1, setNum1] = useState("");
-  const [num2, setNum2] = useState("");
+  const [prevNum, setPrevNum] = useState("");
   const [calc, setCalc] = useState("");
   const [isCalcClicked, setIsCalcClicked] = useState(false);
+  const [isPointClicked, setIsPointClicked] = useState(false);
+  const [isEqualClicked, setIsEqualClicked] = useState(false);
 
-  const onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // if (!isCalcClicked) {
-    //   setValue(e.target.value);
-    // }
-    // console.log(e.target.value);
-  };
-
-  const onKeyUpInput = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    // if (isCalcClicked) {
-    //   setValue(e.key);
-    //   setIsCalcClicked(false);
-    // }
-  };
-
-  const calculate = (num1: number, num2: number, calc: string) => {
-    let result;
-    switch (calc) {
-      case "+":
-        result = num1 + num2;
-        break;
-      case "-":
-        result = num1 - num2;
-        break;
-      case "*":
-        result = num1 * num2;
-        break;
-      case "/":
-        result = num1 / num2;
-        break;
-      default:
-        result = result;
-    }
-
-    let decimalN = 0;
-
-    if (calc === "+" || calc === "-") {
-      if (!Number.isInteger(num1)) {
-        var d = String(num1).split(".")[1].length;
-        if (decimalN < d) decimalN = d;
-      }
-      if (!Number.isInteger(num2)) {
-        var d = String(num2).split(".")[1].length;
-        if (decimalN < d) decimalN = d;
-      }
-    } else {
-      decimalN = 14;
-    }
-
-    result = Number(result?.toFixed(decimalN));
-
-    if (Number.isInteger(result)) return Math.ceil(result);
-
-    const resultArr = [...(result + "").split("")];
-
-    let zero = 0;
-    for (let i = resultArr.length - 1; i > resultArr.length - decimalN; i--) {
-      if (resultArr[i] === "0") {
-        ++zero;
+  const operate = (inputType: string, inputValue: string): void => {
+    if (inputType === "NUMBER") {
+      if (isCalcClicked || value === "0") {
+        setIsPointClicked(false);
+        setValue(inputValue);
+        setIsCalcClicked(false);
       } else {
-        break;
+        setValue(prevValue => prevValue + inputValue);
       }
-    }
+    } else if (inputType === "CALC") {
+      if (isCalcClicked) {
+        setCalc(inputValue);
+      } else if (isEqualClicked) {
+        setIsEqualClicked(false);
+        setPrevNum(value);
+        setCalc(inputValue);
+      } else if (!calc && prevNum === "") {
+        setPrevNum(value);
+        setCalc(inputValue);
+      } else {
+        setCalc(prevCalc => {
+          setValue(prevValue => {
+            const calcValue = calculate(+prevNum, +prevValue, prevCalc) + "";
+            setPrevNum(calcValue);
+            return calcValue;
+          });
+          return inputValue;
+        });
+      }
 
-    return zero > 0 ? Number(result?.toFixed(decimalN - zero)) : result;
+      setIsCalcClicked(true);
+    } else if (
+      inputType === "EQUAL" &&
+      !isEqualClicked &&
+      !isCalcClicked &&
+      prevNum &&
+      calc
+    ) {
+      setIsEqualClicked(true);
+      setValue(prevValue => {
+        const calcValue = calculate(+prevNum, +prevValue, calc) + "";
+        setPrevNum(calcValue);
+        return calcValue;
+      });
+    } else if (inputType === "POINT" && !isPointClicked) {
+      setValue(prevValue => prevValue + ".");
+      setIsPointClicked(true);
+    } else if (inputType === "CLEAR") {
+      setValue("0");
+      setPrevNum("");
+      setCalc("");
+      setIsCalcClicked(false);
+      setIsPointClicked(false);
+      setIsEqualClicked(false);
+    } else if (inputType === "BACKSPACE" && value !== "0") {
+      setValue(prevValue => prevValue.substring(0, prevValue.length - 1));
+    }
   };
 
-  const onClickButton = (e: React.MouseEvent<HTMLDivElement>) => {
-    const target = e.target;
+  const onKeyDown = (e: React.KeyboardEvent<Element>) => {
+    const inputValue = e.key;
+    if (inputValue >= "0" && inputValue <= "9") {
+      operate("NUMBER", inputValue);
+    } else if (
+      inputValue === "+" ||
+      inputValue === "-" ||
+      inputValue === "*" ||
+      inputValue === "/"
+    ) {
+      operate("CALC", inputValue);
+    } else if (inputValue === "=" || inputValue === "Enter") {
+      operate("EQUAL", "");
+    } else if (inputValue === ".") {
+      operate("POINT", "");
+    } else if (inputValue === "Backspace") {
+      operate("BACKSPACE", "");
+    }
+  };
 
-    if (!(target instanceof HTMLButtonElement)) {
+  const onClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target;
+    if (!(target instanceof HTMLDivElement)) {
       return;
     }
 
     const numberClicked = target.className.includes(styles.number);
     const calcClicked = target.className.includes(styles.calc);
-    const acClicked = target.className.includes(styles.ac);
+    const equalClicked = target.className.includes(styles.equal);
     const pointClicked = target.className.includes(styles.point);
+    const clearClicked = target.className.includes(styles.clear);
+
+    const inputValue = target.textContent as string;
 
     if (numberClicked) {
-      if (isCalcClicked || value === "0") {
-        setValue(target.textContent as string);
-        setIsCalcClicked(false);
-      } else {
-        setValue(state => (state + target.textContent) as string);
-      }
+      operate("NUMBER", inputValue);
     } else if (calcClicked) {
-      const calcType = target.textContent as string;
-      if (isCalcClicked) {
-        if (calcType === "=") {
-          setValue(prevValue => {
-            if (!num2) {
-              setNum2(prevValue);
-            }
-            const calcValue = calculate(+prevValue, +num2, calc) + "";
-            setNum1(calcValue);
-            return calcValue;
-          });
-        } else {
-          setCalc(calcType);
-        }
-      } else {
-        if (calcType === "=") {
-        } else {
-          setIsCalcClicked(true);
-        }
-        if (!num1) {
-          setNum1(value);
-          if (calcType !== "=") {
-            setCalc(calcType);
-          }
-        } else {
-          if (calcType !== "=") {
-            setCalc(prevCalc => {
-              setValue(prevValue => {
-                const calcValue = calculate(+num1, +prevValue, prevCalc) + "";
-                setNum2(prevValue);
-                setNum1(calcValue);
-                return calcValue;
-              });
-              return calcType;
-            });
-          } else {
-            setValue(prevValue => {
-              const calcValue = calculate(+num1, +prevValue, calc) + "";
-              setNum1(calcValue);
-              return calcValue;
-            });
-          }
-        }
-      }
-    } else if (acClicked) {
-      setValue("0");
-      setNum1("");
-      setNum2("");
-      setCalc("");
-      setIsCalcClicked(false);
+      operate("CALC", inputValue);
+    } else if (equalClicked) {
+      operate("EQUAL", "");
     } else if (pointClicked) {
-      setValue(state => state + ".");
+      operate("POINT", "");
+    } else if (clearClicked) {
+      operate("CLEAR", "");
     }
   };
 
   return (
     <>
-      {/* <p>num1: {num1}</p>
-      <p>calc: {calc}</p>
-      <p>num2: {num2}</p> */}
-      <div className={styles.container} onClick={onClickButton}>
-        <input
-          className={styles.input}
-          type="text"
-          value={value}
-          onChange={onChangeInput}
-          onKeyUp={onKeyUpInput}
-        />
-        <button className={styles.ac}>ac</button>
-        <button className={styles.calc}>/</button>
-        <button className={styles.number}>7</button>
-        <button className={styles.number}>8</button>
-        <button className={styles.number}>9</button>
-        <button className={styles.calc}>*</button>
-        <button className={styles.number}>4</button>
-        <button className={styles.number}>5</button>
-        <button className={styles.number}>6</button>
-        <button className={styles.calc}>-</button>
-        <button className={styles.number}>1</button>
-        <button className={styles.number}>2</button>
-        <button className={styles.number}>3</button>
-        <button className={styles.calc}>+</button>
-        <button className={styles.zero + " " + styles.number}>0</button>
-        <button className={styles.point}>.</button>
-        <button className={styles.calc}>=</button>
+      <div
+        className={styles.container}
+        onClick={onClick}
+        onKeyDown={onKeyDown}
+        tabIndex={0}
+      >
+        <p>{value}</p>
+        <div className={styles.clear}>clear</div>
+        <div className={styles.calc}>/</div>
+        <div className={styles.number}>7</div>
+        <div className={styles.number}>8</div>
+        <div className={styles.number}>9</div>
+        <div className={styles.calc}>*</div>
+        <div className={styles.number}>4</div>
+        <div className={styles.number}>5</div>
+        <div className={styles.number}>6</div>
+        <div className={styles.calc}>-</div>
+        <div className={styles.number}>1</div>
+        <div className={styles.number}>2</div>
+        <div className={styles.number}>3</div>
+        <div className={styles.calc}>+</div>
+        <div className={styles.zero + " " + styles.number}>0</div>
+        <div className={styles.point}>.</div>
+        <div className={styles.equal}>=</div>
       </div>
     </>
   );
