@@ -1,4 +1,4 @@
-const MAX_LENGTH = 14;
+const MAX_LENGTH = 19;
 
 export const generateDecimal = (num: number) => {
   if (Number.isInteger(num)) return Math.ceil(num) + "";

@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import styles from "../../styles/Calculator.module.css";
 import calculate from "../../utils/calculate";
-
-const MAX_LENGTH = 14;
+import { checkPreventStatus } from "../../utils/checkInputable";
 
 function Index() {
   const [value, setValue] = useState("0");
@@ -12,94 +11,88 @@ function Index() {
   const [isPointClicked, setIsPointClicked] = useState(false);
   const [isEqualClicked, setIsEqualClicked] = useState(false);
 
-  const operate = (inputType: string, inputValue: string): void => {
-    if (inputType === "NUMBER") {
-      if (isCalcClicked || value === "0") {
-        setIsPointClicked(false);
-        setValue(inputValue);
-        setIsCalcClicked(false);
-      } else {
+  const inputCalc = (pressedKey: string) => {
+    if (isCalcClicked) {
+      setCalc(pressedKey);
+    } else if (isEqualClicked) {
+      setIsEqualClicked(false);
+      setPrevNum(value);
+      setCalc(pressedKey);
+    } else if (!calc && prevNum === "") {
+      setPrevNum(value);
+      setCalc(pressedKey);
+    } else {
+      setCalc(prevCalc => {
         setValue(prevValue => {
-          if (prevValue.length === 14) {
-            return prevValue;
+          const calcValue = calculate(+prevNum, +prevValue, prevCalc);
+          setPrevNum(calcValue);
+          if (calcValue.includes(".")) {
+            setIsPointClicked(true);
           }
-          return prevValue + inputValue;
+          return calcValue;
         });
-      }
-    } else if (inputType === "CALC") {
-      if (isCalcClicked) {
-        setCalc(inputValue);
-      } else if (isEqualClicked) {
-        setIsEqualClicked(false);
-        setPrevNum(value);
-        setCalc(inputValue);
-      } else if (!calc && prevNum === "") {
-        setPrevNum(value);
-        setCalc(inputValue);
-      } else {
-        setCalc(prevCalc => {
-          setValue(prevValue => {
-            const calcValue = calculate(+prevNum, +prevValue, prevCalc).slice(
-              0,
-              MAX_LENGTH,
-            );
-            setPrevNum(calcValue);
-            return calcValue;
-          });
-          return inputValue;
-        });
-      }
+        return pressedKey;
+      });
+    }
 
-      setIsCalcClicked(true);
-    } else if (
-      inputType === "EQUAL" &&
-      !isEqualClicked &&
-      !isCalcClicked &&
-      prevNum &&
-      calc
-    ) {
+    setIsCalcClicked(true);
+  };
+
+  const inputEqual = () => {
+    if (!isEqualClicked && !isCalcClicked && prevNum && calc) {
       setIsEqualClicked(true);
       setValue(prevValue => {
-        const calcValue = calculate(+prevNum, +prevValue, calc).slice(
-          0,
-          MAX_LENGTH,
-        );
+        const calcValue = calculate(+prevNum, +prevValue, calc);
         setPrevNum(calcValue);
+        if (calcValue.includes(".")) {
+          setIsPointClicked(true);
+        }
         return calcValue;
       });
-    } else if (inputType === "POINT" && !isPointClicked) {
-      setValue(prevValue => prevValue + ".");
-      setIsPointClicked(true);
-    } else if (inputType === "CLEAR") {
-      setValue("0");
-      setPrevNum("");
-      setCalc("");
-      setIsCalcClicked(false);
-      setIsPointClicked(false);
-      setIsEqualClicked(false);
-    } else if (inputType === "BACKSPACE" && value !== "0") {
-      setValue(prevValue => prevValue.substring(0, prevValue.length - 1));
     }
   };
 
+  const initialState = () => {
+    setValue("0");
+    setPrevNum("");
+    setCalc("");
+    setIsCalcClicked(false);
+    setIsPointClicked(false);
+    setIsEqualClicked(false);
+  };
+
   const onKeyDown = (e: React.KeyboardEvent<Element>) => {
-    const inputValue = e.key;
-    if (inputValue >= "0" && inputValue <= "9") {
-      operate("NUMBER", inputValue);
-    } else if (
-      inputValue === "+" ||
-      inputValue === "-" ||
-      inputValue === "*" ||
-      inputValue === "/"
-    ) {
-      operate("CALC", inputValue);
-    } else if (inputValue === "=" || inputValue === "Enter") {
-      operate("EQUAL", "");
-    } else if (inputValue === ".") {
-      operate("POINT", "");
-    } else if (inputValue === "Backspace") {
-      operate("BACKSPACE", "");
+    const pressedKey = e.key;
+
+    if (checkPreventStatus(pressedKey, isPointClicked)) {
+      e.preventDefault();
     }
+
+    if (pressedKey >= "0" && pressedKey <= "9") {
+      if (isCalcClicked || value === "0") {
+        setIsPointClicked(false);
+        setIsCalcClicked(false);
+        setValue("");
+      }
+    } else if (
+      pressedKey === "+" ||
+      pressedKey === "-" ||
+      pressedKey === "*" ||
+      pressedKey === "/"
+    ) {
+      inputCalc(pressedKey);
+    } else if (pressedKey === "=" || pressedKey === "Enter") {
+      inputEqual();
+    } else if (pressedKey === "." && !isPointClicked) {
+      setIsPointClicked(true);
+    } else if (pressedKey === "Backspace" && value[value.length - 1] === ".") {
+      setIsPointClicked(false);
+    }
+  };
+
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log(e.target.value);
+    setValue(e.target.value);
   };
 
   const onClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -114,30 +107,37 @@ function Index() {
     const pointClicked = target.className.includes(styles.point);
     const clearClicked = target.className.includes(styles.clear);
 
-    const inputValue = target.textContent as string;
+    const clickedKey = target.textContent as string;
 
     if (numberClicked) {
-      operate("NUMBER", inputValue);
+      if (isCalcClicked || value === "0") {
+        setIsPointClicked(false);
+        setValue(clickedKey);
+        setIsCalcClicked(false);
+      } else {
+        setValue(prevValue => prevValue + clickedKey);
+      }
     } else if (calcClicked) {
-      operate("CALC", inputValue);
+      inputCalc(clickedKey);
     } else if (equalClicked) {
-      operate("EQUAL", "");
-    } else if (pointClicked) {
-      operate("POINT", "");
+      inputEqual();
+    } else if (pointClicked && !isPointClicked) {
+      setValue(prevValue => prevValue + ".");
+      setIsPointClicked(true);
     } else if (clearClicked) {
-      operate("CLEAR", "");
+      initialState();
     }
   };
 
   return (
     <>
-      <div
-        className={styles.container}
-        onClick={onClick}
-        onKeyDown={onKeyDown}
-        tabIndex={0}
-      >
-        <input type="text" value={value} onChange={() => {}} />
+      <div className={styles.container} onClick={onClick} tabIndex={0}>
+        <input
+          type="text"
+          value={value}
+          onChange={onChange}
+          onKeyDown={onKeyDown}
+        />
         <div className={styles.clear}>clear</div>
         <div className={styles.calc}>/</div>
         <div className={styles.number}>7</div>
