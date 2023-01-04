@@ -28,6 +28,8 @@ function Index() {
           setPrevNum(calcValue);
           if (calcValue.includes(".")) {
             setIsPointClicked(true);
+          } else {
+            setIsPointClicked(false);
           }
           return calcValue;
         });
@@ -46,6 +48,8 @@ function Index() {
         setPrevNum(calcValue);
         if (calcValue.includes(".")) {
           setIsPointClicked(true);
+        } else {
+          setIsPointClicked(false);
         }
         return calcValue;
       });
