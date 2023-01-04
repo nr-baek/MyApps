@@ -1,5 +1,24 @@
 const MAX_LENGTH = 14;
 
+export const generateDecimal = (num: number) => {
+  if (Number.isInteger(num)) return Math.ceil(num) + "";
+
+  const result = num?.toFixed(MAX_LENGTH);
+
+  const resultArr = [...result.split("")];
+
+  let zero = 0;
+  for (let i = resultArr.length - 1; i > resultArr.length - MAX_LENGTH; i--) {
+    if (resultArr[i] === "0") {
+      ++zero;
+    } else {
+      break;
+    }
+  }
+
+  return zero > 0 ? num.toFixed(MAX_LENGTH - zero) : result;
+};
+
 const calculate = (num1: number, num2: number, calc: string) => {
   let result;
   switch (calc) {
@@ -16,40 +35,10 @@ const calculate = (num1: number, num2: number, calc: string) => {
       result = num1 / num2;
       break;
     default:
-      result = result;
+      result = 0;
   }
 
-  let decimalN = 0;
-
-  if (calc === "+" || calc === "-") {
-    if (!Number.isInteger(num1)) {
-      var d = String(num1).split(".")[1].length;
-      if (decimalN < d) decimalN = d;
-    }
-    if (!Number.isInteger(num2)) {
-      var d = String(num2).split(".")[1].length;
-      if (decimalN < d) decimalN = d;
-    }
-  } else {
-    decimalN = 14;
-  }
-
-  result = Number(result?.toFixed(decimalN));
-
-  if (Number.isInteger(result)) return Math.ceil(result);
-
-  const resultArr = [...(result + "").split("")];
-
-  let zero = 0;
-  for (let i = resultArr.length - 1; i > resultArr.length - decimalN; i--) {
-    if (resultArr[i] === "0") {
-      ++zero;
-    } else {
-      break;
-    }
-  }
-
-  return zero > 0 ? Number(result?.toFixed(decimalN - zero)) : result;
+  return generateDecimal(result);
 };
 
 export default calculate;

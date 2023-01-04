@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import styles from "../../styles/Calculator.module.css";
 import calculate from "../../utils/calculate";
 
+const MAX_LENGTH = 14;
+
 function Index() {
   const [value, setValue] = useState("0");
   const [prevNum, setPrevNum] = useState("");
@@ -17,7 +19,12 @@ function Index() {
         setValue(inputValue);
         setIsCalcClicked(false);
       } else {
-        setValue(prevValue => prevValue + inputValue);
+        setValue(prevValue => {
+          if (prevValue.length === 14) {
+            return prevValue;
+          }
+          return prevValue + inputValue;
+        });
       }
     } else if (inputType === "CALC") {
       if (isCalcClicked) {
@@ -32,7 +39,10 @@ function Index() {
       } else {
         setCalc(prevCalc => {
           setValue(prevValue => {
-            const calcValue = calculate(+prevNum, +prevValue, prevCalc) + "";
+            const calcValue = calculate(+prevNum, +prevValue, prevCalc).slice(
+              0,
+              MAX_LENGTH,
+            );
             setPrevNum(calcValue);
             return calcValue;
           });
@@ -50,7 +60,10 @@ function Index() {
     ) {
       setIsEqualClicked(true);
       setValue(prevValue => {
-        const calcValue = calculate(+prevNum, +prevValue, calc) + "";
+        const calcValue = calculate(+prevNum, +prevValue, calc).slice(
+          0,
+          MAX_LENGTH,
+        );
         setPrevNum(calcValue);
         return calcValue;
       });
@@ -124,7 +137,7 @@ function Index() {
         onKeyDown={onKeyDown}
         tabIndex={0}
       >
-        <p>{value}</p>
+        <input type="text" value={value} onChange={() => {}} />
         <div className={styles.clear}>clear</div>
         <div className={styles.calc}>/</div>
         <div className={styles.number}>7</div>
