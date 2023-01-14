@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styles from "../../styles/Calculator.module.css";
 import calculate from "../../utils/calculate";
 import { checkPreventStatus } from "../../utils/checkInputable";
+import Head from "next/head";
 
 function Index() {
   const [value, setValue] = useState("0");
@@ -135,6 +136,12 @@ function Index() {
 
   return (
     <>
+      <Head>
+        <title>My Apps | 내가만든 앱들</title>
+        <meta name="description" content="The apps that I developed." />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
       <div className={styles.container} onClick={onClick} tabIndex={0}>
         <input
           type="text"
