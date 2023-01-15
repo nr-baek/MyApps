@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import styles from "../../styles/Calculator.module.css";
 import calculate from "../../utils/calculate";
-import { checkPreventStatus } from "../../utils/checkInputable";
 import Head from "next/head";
 
 function Index() {
@@ -69,10 +68,6 @@ function Index() {
   const onKeyDown = (e: React.KeyboardEvent<Element>) => {
     const pressedKey = e.key;
 
-    if (checkPreventStatus(pressedKey, isPointClicked)) {
-      e.preventDefault();
-    }
-
     if (pressedKey >= "0" && pressedKey <= "9") {
       if (isCalcClicked || value === "0") {
         setIsPointClicked(false);
@@ -96,8 +91,7 @@ function Index() {
   };
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.value);
-    setValue(e.target.value);
+    setValue(e.target.value.replace(/[^0-9.]/g, "").replace(/(\..*)\./g, "$1"));
   };
 
   const onClick = (e: React.MouseEvent<HTMLDivElement>) => {
